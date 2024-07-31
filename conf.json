@@ -19,7 +19,7 @@
   },
   "filters": [],
   "dirs": {
-    "output": ".",
+    "output": "/home/rungsikorn-rungsikavarnich/Music",
     "check": [],
     "cache": {
       "path": "<cache>",
@@ -42,8 +42,7 @@
     "memCache": true,
     "cacheSize": 209715200,
     "sources": [
-      "yt_music",
-      "youtube"
+      "yt_music"
     ]
   },
   "services": {

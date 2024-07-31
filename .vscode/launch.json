@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "pid mai",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "./cli.js",
+            "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/57ACryVyaH0N6mW6el3tQm"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "ขอบฟ้า",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "./cli.js",
+            "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/2zNgGQ699Tlwe1sTqWwwNu"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "อยากรู้",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "./cli.js",
+            "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/3eFRYlctvqC2tAppc0tb3r"]
+        }
+
+    ]
+}

@@ -85,6 +85,7 @@
     "spotify-uri": "^4.0.0",
     "stringd": "^2.2.0",
     "stringd-colors": "^1.10.0",
+    "transliteration": "^2.3.5",
     "xbytes": "^1.8.0",
     "xprogress": "^0.20.0",
     "youtube-dl-exec": "^3.0.7",

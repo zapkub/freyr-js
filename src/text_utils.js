@@ -1,3 +1,4 @@
+
 /**
  * Stripout invalid characters, symbols and unnecessary spaces
  *
@@ -56,9 +57,10 @@ function stripText(data) {
  * ); // 100
  */
 function getWeight(a, b) {
-  return (
+  const result = (
     ((b = b.join(' ').split(' ')), a.map(v => v.split(' ').every(p => b.includes(p))).filter(v => !!v).length / a.length) * 100
   );
+  return result;
 }
 
 export default {stripText, getWeight};
