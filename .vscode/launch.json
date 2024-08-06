@@ -33,6 +33,16 @@
             ],
             "program": "./cli.js",
             "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/3eFRYlctvqC2tAppc0tb3r"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "BIGASS XL",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "./cli.js",
+            "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/3HfVpelDmH1KrVs1lbJDUQ"]
         }
 
     ]

@@ -25,7 +25,7 @@ function _getSearchArgs(artists, track, album, duration) {
   if (typeof album === 'number') [album, duration] = [, album];
   if (!Array.isArray(artists))
     if (track && artists) artists = [artists];
-    else [artists, track] = [[], artists || track];
+    else[artists, track] = [[], artists || track];
   if (typeof track !== 'string') throw new Error('<track> must be a valid string');
   if (typeof album !== 'string') throw new Error('<album> must be a valid string');
   if (artists.some(artist => typeof artist !== 'string'))
@@ -34,76 +34,98 @@ function _getSearchArgs(artists, track, album, duration) {
   return [artists, track, album, duration];
 }
 
+function _extractTopResultContext(YTM_PATHS, content) {
+  const result = {};
+  const title = content.musicCardShelfRenderer.title;
+  const subtitle = content.musicCardShelfRenderer.subtitle;
+  const playButton = content.musicCardShelfRenderer.buttons[0];
+
+  result.videoId = playButton.buttonRenderer?.command?.watchEndpoint?.videoId;
+  result.type = 'song';
+  result.title = title.runs[0].text
+  result.duration = subtitle.runs[6].text
+  result.artists = [
+    {
+      name: subtitle.runs[2].text,
+      id: subtitle.runs[2].navigationEndpoint.browseEndpoint.browseId,
+    },
+  ]
+  result.album = {
+    name: subtitle.runs[4].text,
+    id: subtitle.runs[4].navigationEndpoint.browseEndpoint.browseId,
+  }
+  return result
+}
 function _extractLayerContent(YTM_PATHS, layerName, content) {
-              content = content.musicResponsiveListItemRenderer;
-              function getItemRuns(item, index) {
-                return walk(item, 'flexColumns', index, 'musicResponsiveListItemFlexColumnRenderer', 'text', 'runs');
-              }
+  content = content.musicResponsiveListItemRenderer;
+  function getItemRuns(item, index) {
+    return walk(item, 'flexColumns', index, 'musicResponsiveListItemFlexColumnRenderer', 'text', 'runs');
+  }
 
-              function getItemText(item, index, run_index = 0) {
-                return getItemRuns(item, index)[run_index].text;
-              }
+  function getItemText(item, index, run_index = 0) {
+    return getItemRuns(item, index)[run_index].text;
+  }
 
-              const result = {};
+  const result = {};
 
-              let type = layerName === 'Songs' ? 'song' : getItemText(content, 1).toLowerCase();
-              if (type === 'single') type = 'album';
+  let type = layerName === 'Songs' ? 'song' : getItemText(content, 1).toLowerCase();
+  if (type === 'single') type = 'album';
 
-              if (['song', 'video', 'album', 'artist', 'playlist'].includes(type)) result.type = type;
+  if (['song', 'video', 'album', 'artist', 'playlist'].includes(type)) result.type = type;
 
-              const runs = getItemRuns(content, 1).filter(item => item.text !== ' • ');
-              const navigable = runs
-                .filter(item => 'navigationEndpoint' in item)
-                .map(item => ({name: item.text, id: walk(item, YTM_PATHS.NAVIGATION_BROWSE_ID)}));
+  const runs = getItemRuns(content, 1).filter(item => item.text !== ' • ');
+  const navigable = runs
+    .filter(item => 'navigationEndpoint' in item)
+    .map(item => ({ name: item.text, id: walk(item, YTM_PATHS.NAVIGATION_BROWSE_ID) }));
 
-              if (['song', 'video', 'album', 'playlist'].includes(type)) {
-                result.title = getItemText(content, 0);
-              }
+  if (['song', 'video', 'album', 'playlist'].includes(type)) {
+    result.title = getItemText(content, 0);
+  }
 
-              if (['song', 'video', 'album', 'playlist'].includes(type)) {
-                [result.artists, result.album] = navigable.reduce(
-                  ([artists, album], item) => {
-                    if (item.id.startsWith('UC')) artists.push(item);
-                    else album = item;
-                    return [artists, album];
-                  },
-                  [[], null],
-                );
-              }
+  if (['song', 'video', 'album', 'playlist'].includes(type)) {
+    [result.artists, result.album] = navigable.reduce(
+      ([artists, album], item) => {
+        if (item.id.startsWith('UC')) artists.push(item);
+        else album = item;
+        return [artists, album];
+      },
+      [[], null],
+    );
+  }
 
-              if (['song', 'video'].includes(type))
-                result.videoId = walk(content, YTM_PATHS.PLAY_BUTTON, 'playNavigationEndpoint', 'watchEndpoint', 'videoId');
+  if (['song', 'video'].includes(type))
+    result.videoId = walk(content, YTM_PATHS.PLAY_BUTTON, 'playNavigationEndpoint', 'watchEndpoint', 'videoId');
 
-              if (
-                ['artist', 'album', 'playlist'].includes(type) &&
-                !(result.browseId = walk(content, YTM_PATHS.NAVIGATION_BROWSE_ID))
-              ) {
-                return {};
-              }
+  if (
+    ['artist', 'album', 'playlist'].includes(type) &&
+    !(result.browseId = walk(content, YTM_PATHS.NAVIGATION_BROWSE_ID))
+  ) {
+    return {};
+  }
 
-              if (type === 'song') {
-                result.duration = runs[runs.length - 1].text;
-              } else if (type === 'video') {
-                delete result.album;
-                [result.views, result.duration] = runs.slice(-2).map(item => item.text);
-                [result.views] = result.views.split(' ');
-              } else if (type === 'album') {
-                result.type = runs[0].text.toLowerCase();
-                delete result.album;
-                result.title = getItemText(content, 0);
-                result.year = runs[runs.length - 1].text;
-              } else if (type === 'artist') {
-                result.artist = getItemText(content, 0);
-                [result.subscribers] = runs[runs.length - 1].text.split(' ');
-              } else if (type === 'playlist') {
-                result.author = result.artists;
-                delete result.artists;
-                delete result.album;
-                result.itemCount = parseInt(runs[runs.length - 1].text.split(' ')[0], 10);
-              }
+  if (type === 'song') {
+    result.duration = runs[runs.length - 1].text;
+  } else if (type === 'video') {
+    delete result.album;
+    [result.views, result.duration] = runs.slice(-2).map(item => item.text);
+    [result.views] = result.views.split(' ');
+  } else if (type === 'album') {
+    result.type = runs[0].text.toLowerCase();
+    delete result.album;
+    result.title = getItemText(content, 0);
+    result.year = runs[runs.length - 1].text;
+  } else if (type === 'artist') {
+    result.artist = getItemText(content, 0);
+    [result.subscribers] = runs[runs.length - 1].text.split(' ');
+  } else if (type === 'playlist') {
+    result.author = result.artists;
+    delete result.artists;
+    delete result.album;
+    result.itemCount = parseInt(runs[runs.length - 1].text.split(' ')[0], 10);
+  }
 
-              return result;
-  } 
+  return result;
+}
 
 /**
  * @typedef {(
@@ -176,7 +198,7 @@ export class YouTubeMusic {
 
   #getApiKey = async function getApiKey(force = false) {
     if (this.#store.apiKey && !force) return this.#store.apiKey;
-    const body = await this.#request('https://music.youtube.com/', {method: 'get'});
+    const body = await this.#request('https://music.youtube.com/', { method: 'get' });
     let match;
     if ((match = (body || '').match(/(?="INNERTUBE_API_KEY":"(.+?)")/)))
       return ([, this.#store.apiKey] = match), this.#store.apiKey;
@@ -203,9 +225,9 @@ export class YouTubeMusic {
     if (typeof queryObject !== 'object') throw new Error('<queryObject> must be an object');
     if (params && typeof params !== 'object') throw new Error('<params>, if defined must be an object');
     const response = await this.#request('https://music.youtube.com/youtubei/v1/search', {
-      timeout: {request: 10000},
+      timeout: { request: 10000 },
       method: 'post',
-      searchParams: {alt: 'json', key: await this.#getApiKey(), ...params},
+      searchParams: { alt: 'json', key: await this.#getApiKey(), ...params },
       responseType: 'json',
       json: {
         context: {
@@ -228,20 +250,21 @@ export class YouTubeMusic {
     const shelf = !('continuationContents' in response)
       ? walk(response, YTM_PATHS.SECTION_LIST).map(section => section.musicShelfRenderer || section)
       : [
-          walk(response, 'continuationContents', 'musicShelfContinuation') ||
-            walk(response, 'continuationContents', 'sectionListContinuation'),
-        ];
+        walk(response, 'continuationContents', 'musicShelfContinuation') ||
+        walk(response, 'continuationContents', 'sectionListContinuation'),
+      ];
 
-    return Object.fromEntries(
-      shelf.map(layer => {
+
+    var shelfEntires = shelf.map(
+      layer => {
         let layerName = walk(layer, YTM_PATHS.TITLE_TEXT);
         const isTopResult = walk(layer, YTM_PATHS.TOP_RESULT_TEXT);
         if (isTopResult === 'Top result') {
           layerName = 'Top result'
         }
         return [
-          // layerName === 'Top result'
-          isTopResult === 'Top result'
+          // isTopResult === 'Top result'
+          layerName === 'Top result'
             ? 'top'
             : layerName === 'Songs'
               ? 'songs'
@@ -255,34 +278,37 @@ export class YouTubeMusic {
                       ? 'playlists'
                       : `other${layerName ? `(${layerName})` : ''}`,
           {
-            contents: (layer.contents || []).map(content => { 
-              _extractLayerContent(YTM_PATHS, layerName, content)
+            contents: (layer.contents || []).map(content => {
+              return _extractLayerContent(YTM_PATHS, layerName, content)
             }),
+            musicCardShelfRenderer: layer.musicCardShelfRenderer ? [_extractTopResultContext(YTM_PATHS, layer, layer.musicCardShelfRenderer)] : [],
             ...(layerName === 'Top result'
               ? null
               : {
-                  loadMore: !layer.continuations
-                    ? undefined
-                    : async () => {
-                        const continuationObject = layer.continuations[0].nextContinuationData;
-                        return (
-                          await this.#search(
-                            {},
-                            {
-                              icit: continuationObject.clickTrackingParams,
-                              continuation: continuationObject.continuation,
-                            },
-                          )
-                        ).other;
-                      },
-                  expand: !layer.bottomEndpoint
-                    ? undefined
-                    : async () => (await this.#search(layer.bottomEndpoint.searchEndpoint, {})).other,
-                }),
+                loadMore: !layer.continuations
+                  ? undefined
+                  : async () => {
+                    const continuationObject = layer.continuations[0].nextContinuationData;
+                    return (
+                      await this.#search(
+                        {},
+                        {
+                          icit: continuationObject.clickTrackingParams,
+                          continuation: continuationObject.continuation,
+                        },
+                      )
+                    ).other;
+                  },
+                expand: !layer.bottomEndpoint
+                  ? undefined
+                  : async () => (await this.#search(layer.bottomEndpoint.searchEndpoint, {})).other,
+              }),
           },
         ];
-      }),
-    );
+      })
+
+
+    return Object.fromEntries(shelfEntires);
   };
 
 
@@ -303,10 +329,10 @@ export class YouTubeMusic {
   async search(artists, track, album, duration) {
     [artists, track, album, duration] = _getSearchArgs(artists, track, album, duration);
 
-    const results = await this.#search({query: [track, album, ...artists].join(' ')});
+    const results = await this.#search({ query: [track, album, ...artists].join(' ') });
     const strippedMeta = textUtils.stripText([...track.split(' '), album, ...artists]);
     const validSections = [
-      ...((results.top || {}).contents || []), // top recommended songs
+      ...((results.top || {}).musicCardShelfRenderer || []), // top recommended songs
       ...((results.songs || {}).contents || []), // song section
       ...((results.videos || {}).contents || []), // videos section
     ]
@@ -400,12 +426,12 @@ export class YouTube {
           ...final,
           ...(textUtils.getWeight(strippedMeta, textUtils.stripText([...item.title.split(' '), item.author.name])) > 70
             ? (final.results.push(item),
-              {
-                highestViews: Math.max(final.highestViews, (item.views = item.views || 0)),
-              })
+            {
+              highestViews: Math.max(final.highestViews, (item.views = item.views || 0)),
+            })
             : {}),
         }),
-        {xFilters, highestViews: 0, results: []},
+        { xFilters, highestViews: 0, results: [] },
       ),
     ),
   };
@@ -453,8 +479,8 @@ export class YouTube {
       // bump accuracy by 60% if video author matches track author
       accuracy += (cur =>
         textUtils.getWeight(strippedArtists, textUtils.stripText([item.author.name])) >= 80 ? (60 / 100) * cur : 0)(
-        100 - accuracy,
-      );
+          100 - accuracy,
+        );
       return accuracy;
     }
     const final = {};
