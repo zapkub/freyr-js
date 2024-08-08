@@ -1101,7 +1101,7 @@ async function init(packageJson, queries, options) {
       try {
         await Promise.promisify(atomicParsley)(meta.outFile.path, {
           overWrite: '', // overwrite the file
-
+          comment: `${audioSource.service.constructor.name}:${audioSource.source.videoId}`,
           title: track.name, // ©nam
           artist: track.artists[0], // ©ART
           composer: track.composers, // ©wrt

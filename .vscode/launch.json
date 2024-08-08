@@ -32,7 +32,7 @@
                 "<node_internals>/**"
             ],
             "program": "./cli.js",
-            "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/3eFRYlctvqC2tAppc0tb3r"]
+            "args": ["get", "--atomic-parsley", "/Users/rungsikorn/Repositories/freyr-js/bins/AtomicParsley", "-f", "--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/5J3arLZL7OgQ4yvLDfatxW?si=54072af2eaec4fea"]
         },
         {
             "type": "node",
@@ -41,8 +41,9 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "outputCapture": "std",
             "program": "./cli.js",
-            "args": ["get","--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/3HfVpelDmH1KrVs1lbJDUQ"]
+            "args": ["get", "--atomic-parsley", "/Users/rungsikorn/Repositories/freyr-js/bins/AtomicParsley", "-f", "--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/52peeUioHILvGXgUmKLrz2?si=7562716f9aa942de"]
         }
 
     ]

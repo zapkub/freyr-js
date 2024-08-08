@@ -40,6 +40,10 @@ function _extractTopResultContext(YTM_PATHS, content) {
   const subtitle = content.musicCardShelfRenderer.subtitle;
   const playButton = content.musicCardShelfRenderer.buttons[0];
 
+  if (subtitle.runs[0].text !== 'Song') {
+    return undefined
+  }
+
   result.videoId = playButton.buttonRenderer?.command?.watchEndpoint?.videoId;
   result.type = 'song';
   result.title = title.runs[0].text
@@ -50,6 +54,7 @@ function _extractTopResultContext(YTM_PATHS, content) {
       id: subtitle.runs[2].navigationEndpoint.browseEndpoint.browseId,
     },
   ]
+  result.top = true;
   result.album = {
     name: subtitle.runs[4].text,
     id: subtitle.runs[4].navigationEndpoint.browseEndpoint.browseId,
@@ -348,8 +353,8 @@ export class YouTubeMusic {
                 ...item.title.split(' '),
                 ...(item.album?.name.split(' ') ?? []),
                 ...item.artists.map(artist => artist.name),
-              ]),
-            ),
+              ]) 
+            ) + (item.top ? 50 : 0), // if top result, go for it,
           },
       )
       .filter(Boolean);
@@ -375,6 +380,13 @@ export class YouTubeMusic {
          */
         if (item.weight === 0 && containsThai(track) !== containsThai(item.title)) {
           item.weight = 100 / (track.length === item.title.length ? 0 : Math.abs(track.length - item.title.length));
+        }
+
+        /**
+         * only need songs
+         */
+        if (item.type !== 'song') {
+          return final;
         }
 
         // prune duplicates

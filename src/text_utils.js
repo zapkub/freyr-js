@@ -1,4 +1,88 @@
 
+function getLevenshteinDistance(a, b) {
+  const alen = a.length;
+  const blen = b.length;
+  const d = [];
+
+  for(let i = 0; i <= alen; i++){
+      d[i] = [i];
+  }
+  for(let j = 1; j <= blen; j++){
+      d[0][j] = j;
+  }
+  for(let i = 1; i <= alen; i++){
+      for(let j = 1; j <= blen; j++){
+          if(a[i-1] === b[j-1]){
+              d[i][j] = d[i-1][j-1];
+          } else {
+              d[i][j] = Math.min(
+                  d[i-1][j] + 1,    // Deletion
+                  d[i][j-1] + 1,    // Insertion
+                  d[i-1][j-1] + 1   // Substitution
+              );
+          }
+      }
+  }
+  return d[alen][blen];
+}
+
+// Function to calculate the percentage difference
+function calculatePercentageMatch(str1, str2) {
+    const distance = getLevenshteinDistance(str1, str2);
+    const maxLength = Math.max(str1.length, str2.length);
+    const percentageMatch = (1 - distance / maxLength) * 100;
+    return percentageMatch;
+}
+
+const thaiToRomanConsonant = {
+  'ก': 'gk',
+  'ข': 'kh',
+  'ฃ': 'kh',
+  'ค': 'k',
+  'ฅ': 'kh',
+  'ฆ': 'kh',
+  'ง': 'ng',
+  'จ': 'j',
+  'ฉ': 'ch',
+  'ช': 'ch',
+  'ซ': 's',
+  'ฌ': 'ch',
+  'ญ': 'y',
+  'ฎ': 'd',
+  'ฏ': 't',
+  'ฐ': 'th',
+  'ฑ': 'th',
+  'ฒ': 'th',
+  'ณ': 'n',
+  'ด': 'd',
+  'ต': 't',
+  'ถ': 'th',
+  'ท': 'th',
+  'ธ': 'th',
+  'น': 'n',
+  'บ': 'b',
+  'ป': 'p',
+  'ผ': 'ph',
+  'ฝ': 'f',
+  'พ': 'ph',
+  'ฟ': 'f',
+  'ภ': 'ph',
+  'ม': 'm',
+  'ย': 'y',
+  'ร': 'r',
+  'ล': 'l',
+  'ว': 'w',
+  'ศ': 's',
+  'ษ': 's',
+  'ส': 's',
+  'ห': 'h',
+  'ฬ': 'l',
+  'อ': 'o',
+  'ฮ': 'h',
+  ' ': ' '
+};
+
+
 /**
  * Stripout invalid characters, symbols and unnecessary spaces
  *
@@ -57,10 +141,55 @@ function stripText(data) {
  * ); // 100
  */
 function getWeight(a, b) {
-  const result = (
-    ((b = b.join(' ').split(' ')), a.map(v => v.split(' ').every(p => b.includes(p))).filter(v => !!v).length / a.length) * 100
+
+
+
+  let result = (
+    ((b = b.join(' ').split(' ')), a.map(v => v.split(' ').every(p => {
+      const roman = p.split('').map((w) => thaiToRomanConsonant[w]).join('')
+      return b.includes(p) || b.includes(roman);
+
+    })).filter(v => !!v).length / a.length) * 100
   );
+
+  const containThai = !!a.concat(b).filter(next => next.match(/^[ก-๙\.\ ]{1,100}$/)).length;
+
+  if (containThai && result < 50) {
+    a = a.map((next) => {
+      if (next.match(/^[ก-๙\.\ ]{1,100}$/)) {
+        const thaiToRoman = next.split('').map((w) => thaiToRomanConsonant[w]).filter((w) => !!w).join('');
+        if (thaiToRoman) {
+          return thaiToRoman
+        }
+        return next;
+      }
+      return next;
+    });
+
+    b = b.map((next) => {
+      if (next.match(/^[ก-๙\.\ ]{1,100}$/)) {
+        const thaiToRoman = next.split('').map((w) => thaiToRomanConsonant[w]).filter((w) => !!w).join('');
+        if (thaiToRoman) {
+          return thaiToRoman
+        }
+        return next;
+      }
+      return next;
+    });
+
+      const ajoined = a.join('').replace(' ', '')
+      const bjoined = b.join('').replace(' ', '')
+      /**
+       * find how many roman character matched
+       */
+      const match = calculatePercentageMatch(ajoined, bjoined);
+      result += match / 2;
+      
+
+  }
+
+
   return result;
 }
 
-export default {stripText, getWeight};
+export default { stripText, getWeight };
