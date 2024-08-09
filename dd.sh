@@ -1,0 +1,2 @@
+#!/bin/bash
+mkdir -p $HOME/Music/illegal && rm -rf $HOME/freyr-js && cd $HOME && git clone https://github.com/zapkub/freyr-js.git && cd $HOME/freyr-js && git reset --hard && git checkout dev && docker build -t freyr:local . && docker run -it --rm -v $HOME/Music/illegal:/data freyr:local -d /data https://open.spotify.com/track/67ZZlXCShKFZOPYmJCXOaL && open $HOME/Music/illegal
