@@ -43,7 +43,17 @@
             ],
             "outputCapture": "std",
             "program": "./cli.js",
-            "args": ["get", "--atomic-parsley", "/Users/rungsikorn/Repositories/freyr-js/bins/AtomicParsley", "-f", "--sources", "yt_music,!youtube", "--config", "./conf.json", "https://open.spotify.com/track/52peeUioHILvGXgUmKLrz2?si=7562716f9aa942de"]
+            "args": ["get", "--atomic-parsley", "/Users/rungsikorn/Repositories/freyr-js/bins/AtomicParsley", "-f", "--sources", "yt_music,!youtube", "--config", "./conf.json", "https://music.apple.com/th/album/%E0%B8%9C-%E0%B8%8A%E0%B8%B2%E0%B8%A2%E0%B8%A3-%E0%B8%AD%E0%B8%87%E0%B9%84%E0%B8%AB/567937812?i=567937817"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "rater",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "./rater.js"
+
         }
 
     ]

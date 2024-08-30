@@ -19,7 +19,7 @@
   },
   "filters": [],
   "dirs": {
-    "output": "/Users/rungsikorn/Music/Sandbox",
+    "output": "/Users/rungsikorn/Music/Main/Music",
     "check": [],
     "cache": {
       "path": "<cache>",
@@ -52,7 +52,7 @@
       "refreshToken": "AQCbeNs5NiGfHa6He0BlOdoQwEIdo2lwBmefEvpvqVy8WlL2HV7rmGbb30_oaZHMDf9MgXtGjI0gV_QukL33PE8c2bGqJHeMqdHBUjKWhxOW19snJkGUiyxen8UvmDG-OP4"
     },
     "apple_music": {
-      "storefront": "us"
+      "storefront": "th"
     },
     "deezer": {
       "retries": 2
